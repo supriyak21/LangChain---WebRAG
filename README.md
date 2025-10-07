@@ -56,6 +56,7 @@ Generates a comprehensive, contextual answer
 Presents the information in a clear, conversational format
 
 📁 Project Structure
+
 langchain-liveqa/
 │
 ├── app.py                              # Main Streamlit application
