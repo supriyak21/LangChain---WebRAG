@@ -1,0 +1,79 @@
+# Installing necessary packages
+!pip install langchain-google-community
+!pip install serpapi
+!pip install google-search-results
+!pip install -U langchain-openai
+!pip install streamlit langchain-openai serpapi requests beautifulsoup4 python-dotenv
+
+
+import os
+from dotenv import load_dotenv
+load_dotenv() 
+openai_api_key = os.getenv("OPENAI_API_KEY")
+serpapi_api_key = os.getenv("SERPAPI_API_KEY")
+
+from langchain_openai import ChatOpenAI
+from langchain.tools import Tool
+from langchain.agents import initialize_agent
+from serpapi import GoogleSearch
+import requests
+from bs4 import BeautifulSoup
+
+
+
+# Defining Function to Fetch Page Text
+def fetch_page_text(url):
+    try:
+        response = requests.get(url, timeout=10)  #fetching the page content by sending HTTP GET request
+        soup = BeautifulSoup(response.text, "html.parser")  #Parsing the HTML content of the page using BeautifulSoup
+        # Basic cleanup: remove all scripts & styles elements
+        for script in soup(["script", "style"]):
+            script.extract()
+        text = soup.get_text(separator=" ", strip=True)   # Extracting and cleaning the text content, joining with space and removing whitespace
+        return text[:1500]  #Truncating the text to ensure it fits within token limits
+    except Exception as e:
+        return f"Error fetching content from {url}: {e}"   #return an error message with the URL and the exception in case of an error
+
+
+
+# Google Search Tool with Content Fetching
+def serpapi_search(query: str) -> str:
+    params = {
+        "q": query,
+        "engine": "google",
+        "api_key": os.getenv("SERPAPI_API_KEY"),
+        "num": 3
+    }
+    search = GoogleSearch(params)   #Google search using the parameters
+    results = search.get_dict()  #results output as a dictionary
+    links = [res["link"] for res in results.get("organic_results", []) if "link" in res]  #Extracting links
+
+    summaries = []  #creating a list to hold the summaries of pages
+    for link in links:  #fetch page content through extracted links
+        content = fetch_page_text(link)
+        summaries.append(f"Source:{link}\n\n{content}")
+
+    return "\n\n---\n\n".join(summaries)   #single string created by joining the summaries
+
+
+
+# Registering the Tool for LangChain
+search_tool = Tool(name="GoogleSearch", func=serpapi_search, description="Useful for answering questions by searching the web")
+
+
+# defining LLM model
+llm = ChatOpenAI(model_name="gpt-4",temperature=0.3,openai_api_key=os.getenv("OPENAI_API_KEY"))
+
+
+#Create the LangChain Agent
+agent = initialize_agent(tools=[search_tool],llm=llm,agent="zero-shot-react-description",verbose=True)
+
+
+
+#Ask any Question 
+query = "What is the capital of USA?"
+response = agent.run(query)
+
+
+
+
