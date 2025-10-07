@@ -20,10 +20,15 @@ Dynamic Retrieval Pipeline: Fetches and processes real-time information from web
 Technology Stack
 
 LangChain: Framework for LLM application development
+
 GPT-4: OpenAI's advanced language model for response generation
+
 SerpAPI: Google search API for structured search results
+
 BeautifulSoup: HTML parsing and content extraction
+
 Streamlit: Web application framework
+
 
 
  Project Walkthrough
@@ -64,9 +69,13 @@ langchain-liveqa/
 LangChain LiveQA excels at:
 
 ✅ Current Events: "What's happening in the stock market today?"
+
 ✅ Weather Information: "Will it rain in Seattle tomorrow?"
+
 ✅ Factual Queries: "What is the capital of France?"
+
 ✅ Location Information: "Where is Mount Rainier located?"
+
 ✅ Real-Time Data: "What's the current exchange rate for USD to EUR?"
 
 
